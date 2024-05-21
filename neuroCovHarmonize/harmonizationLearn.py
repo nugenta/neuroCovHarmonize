@@ -383,6 +383,28 @@ def saveHarmonizationModel(model, file_name):
     
     return None
 
+def saveHarmonizationModelNeuroCombat(model, file_name):
+    
+    """
+    Save a NeuroCombat harmonization model from harmonizationLearn().
+    
+    For saving model contents, this function will create a new file specified
+    by file_name, and store the model using the pickle package.
+    
+    """
+    if os.path.exists(file_name):
+        raise ValueError('Model file already exists: %s. Change name or delete to save.' % file_name)
+    # estimate size of out_file
+    est_size = 0
+    for key in ['batches', 'v_pool', 's_mean', 'mod_mean', 'gamma_star', 'delta_star']:
+        est_size += model[key].nbytes / 1e6
+    print('\n[neuroHarmonize]: Saving model object, estimated size in MB: %4.2f' % est_size)
+    out_file = open(file_name, 'wb')
+    pickle.dump(model, out_file)
+    out_file.close()
+    
+    return None
+
 def adjust_data_stageone(s_data, design, gamma_star, delta_star, stand_mean, mod_mean, var_pooled, info_dict, dat):
     sample_per_batch = info_dict['sample_per_batch']
     n_batch = info_dict['n_batch']
