@@ -251,9 +251,9 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     bayes_data = new_data.T
 
     if return_s_data:
-        return model, bayes_data, bayes_data_combat_only, s_data.T
+        return model, scores_com['estimates'], bayes_data, bayes_data_combat_only, s_data.T
     else:
-        return model, bayes_data, bayes_data_combat_only
+        return model, scores_com['estimates'], bayes_data, bayes_data_combat_only
 
 def standardizeAcrossFeatures(X, design, info_dict, smooth_model):
     """
