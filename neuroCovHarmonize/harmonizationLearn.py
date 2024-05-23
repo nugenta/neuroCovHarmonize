@@ -397,7 +397,7 @@ def saveHarmonizationModelNeuroCombat(model, file_name):
         raise ValueError('Model file already exists: %s. Change name or delete to save.' % file_name)
     # estimate size of out_file
     est_size = 0
-    for key in ['batches', 'v_pool', 's_mean', 'mod_mean', 'gamma_star', 'delta_star']:
+    for key in ['batches', 'var.pooled', 'stand.mean', 'mod.mean', 'gamma_bar', 'gamma.star', 'delta.star']:
         est_size += model[key].nbytes / 1e6
     print('\n[neuroHarmonize]: Saving model object, estimated size in MB: %4.2f' % est_size)
     out_file = open(file_name, 'wb')
