@@ -212,7 +212,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
             
     # The extra CovBat steps
     
-    comdata = bayes_data.T
+    comdata = bayes_data
     # standardize data before PCA        
     scaler = StandardScaler()
     comdata = scaler.fit_transform(comdata)
@@ -253,6 +253,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     if return_s_data:
         return model, scores_com['estimates'], bayes_data, bayes_data_combat_only, s_data.T
     else:
+        print('returning model, 2nd level model, covbat harmonized data, and combat only harmonized data ')
         return model, scores_com['estimates'], bayes_data, bayes_data_combat_only
 
 def standardizeAcrossFeatures(X, design, info_dict, smooth_model):
