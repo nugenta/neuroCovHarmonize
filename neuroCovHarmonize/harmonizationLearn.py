@@ -235,7 +235,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
         if (var < 1):
             npc = np.min(np.where(var_exp > var)) + 1
         else:
-            npc = np.shape(comdata)[1]
+            npc = np.shape(comdata)[1] - 1
         if n_pc > 0:
             npc = n_pc
         scores = full_scores[range(0,npc),:]
