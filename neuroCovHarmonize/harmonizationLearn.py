@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 
 def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bounds=(None, None),
                        ref_batch=None, return_s_data=False,
-                       orig_model=None, seed=None, pct_var=0.95, n_pc=0):
+                       orig_model=None, seed=None, pct_var=[0.95], n_pc=0):
     """
     Wrapper for neuroCombat function that returns the harmonization model.
     
@@ -214,32 +214,43 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
             
     # The extra CovBat steps
     
-    comdata = bayes_data
-    # standardize data before PCA        
-    scaler = StandardScaler()
-    comdata = scaler.fit_transform(comdata)
+    covbat_data = np.zeros((np.shape(bayes_data)[1],np.shape(bayes_data)[0],len(pct_var)))
+    pct_idx = 0
+    
+    for var in pct_var:
+        
+        print('/nPerforming CovBat steps retaining %f percent variance\n' % (var))
+        
+        comdata = bayes_data.T
+        # standardize data before PCA        
+        scaler = StandardScaler()
+        comdata = scaler.fit_transform(comdata)
             
-    pca = PCA()
-    pca.fit(comdata)
-    pc_comp = pca.components_
-    full_scores = pca.fit_transform(comdata).T
+        pca = PCA()
+        pca.fit(comdata)
+        pc_comp = pca.components_
+        full_scores = pca.fit_transform(comdata).T
 
-    var_exp = np.cumsum(np.round(pca.explained_variance_ratio_, decimals=4))
-    npc = np.min(np.where(var_exp > pct_var)) + 1
-    if n_pc > 0:
-        npc = n_pc
-    scores = full_scores[range(0,npc),:]
+        var_exp = np.cumsum(np.round(pca.explained_variance_ratio_, decimals=4))
+        if (var < 1):
+            npc = np.min(np.where(var_exp > var)) + 1
+        else:
+            npc = np.shape(comdata)[1]
+        if n_pc > 0:
+            npc = n_pc
+        scores = full_scores[range(0,npc),:]
     
-    # now perform combat again, no EB and without the smoothing stuff
+        # now perform combat again, no EB and without the smoothing stuff
     
-    scores_com = neuroCombat(scores, covars_df, 'SITE', eb=False)
-    scores_com_dat = scores_com['data']
-    full_scores[range(0,npc),:] = scores_com_dat
+        scores_com = neuroCombat(scores, covars_df, 'SITE', eb=False)
+        scores_com_dat = scores_com['data']
+        full_scores[range(0,npc),:] = scores_com_dat
 
-    proj = np.dot(full_scores.T, pc_comp).T
-    new_data = scaler.inverse_transform(proj.T).T    
+        proj = np.dot(full_scores.T, pc_comp).T
+        new_data = scaler.inverse_transform(proj.T).T    
 
-    new_data += stand_mean + mod_mean
+        covbat_data[:, :, pct_idx] = (new_data + stand_mean + mod_mean).T
+        pct_idx += 1
 
     model = {'design': design, 'SITE_labels': batch_labels,
                 'var_pooled':var_pooled, 'B_hat':B_hat, 'stand_mean': stand_mean, 'mod_mean': mod_mean,
@@ -250,7 +261,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
                 'smooth_model': smooth_model, 'eb': eb,'SITE_labels_train':batch_labels,'Covariates':covar_levels,
                 'ref_batch': ref_batch}
     # transpose data to return to original shape
-    bayes_data = new_data.T
+    bayes_data = covbat_data
 
     if return_s_data:
         return model, scores_com['estimates'], bayes_data, bayes_data_combat_only, s_data.T
@@ -435,4 +446,4 @@ def adjust_data_stageone(s_data, design, gamma_star, delta_star, stand_mean, mod
     if ref_level is not None:
         bayesdata[:, batch_info[ref_level]] = dat[:,batch_info[ref_level]]
 
-    return bayesdata.T
+    return bayesdata

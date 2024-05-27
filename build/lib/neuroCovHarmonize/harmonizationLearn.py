@@ -206,7 +206,9 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     
     bayes_data_combat_only = adjust_data_final(s_data, design, gamma_star, delta_star, 
                                             stand_mean, mod_mean, var_pooled, info_dict, data)
-        
+    # return to original data shape
+    bayes_data_combat_only = bayes_data_combat_only.T
+    
     bayes_data = adjust_data_stageone(s_data, design, gamma_star, delta_star, 
                                             stand_mean, mod_mean, var_pooled, info_dict, data)
             
