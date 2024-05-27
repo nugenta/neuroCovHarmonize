@@ -216,6 +216,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     
     covbat_data = np.zeros((np.shape(bayes_data)[1],np.shape(bayes_data)[0],len(pct_var)))
     pct_idx = 0
+    estimate_list = []
     
     for var in pct_var:
         
@@ -235,7 +236,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
         if (var < 1):
             npc = np.min(np.where(var_exp > var)) + 1
         else:
-            npc = np.shape(comdata)[1] - 1
+            npc = pca.n_components_ 
         if n_pc > 0:
             npc = n_pc
         scores = full_scores[range(0,npc),:]
@@ -244,6 +245,7 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     
         scores_com = neuroCombat(scores, covars_df, 'SITE', eb=False)
         scores_com_dat = scores_com['data']
+        estimate_list.append(scores_com['estimates'])
         full_scores[range(0,npc),:] = scores_com_dat
 
         proj = np.dot(full_scores.T, pc_comp).T
@@ -264,10 +266,10 @@ def harmonizationCovLearn(data, covars, eb=True, smooth_terms=[], smooth_term_bo
     bayes_data = covbat_data
 
     if return_s_data:
-        return model, scores_com['estimates'], bayes_data, bayes_data_combat_only, s_data.T
+        return model, estimate_list, bayes_data, bayes_data_combat_only, s_data.T
     else:
         print('returning model, 2nd level model, covbat harmonized data, and combat only harmonized data ')
-        return model, scores_com['estimates'], bayes_data, bayes_data_combat_only
+        return model, estimate_list, bayes_data, bayes_data_combat_only
 
 def standardizeAcrossFeatures(X, design, info_dict, smooth_model):
     """
